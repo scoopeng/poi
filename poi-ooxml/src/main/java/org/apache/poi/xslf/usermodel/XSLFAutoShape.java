@@ -22,6 +22,7 @@ package org.apache.poi.xslf.usermodel;
 import org.apache.poi.sl.usermodel.AutoShape;
 import org.apache.poi.util.Beta;
 import org.apache.poi.xddf.usermodel.text.XDDFTextBody;
+import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTPresetGeometry2D;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties;
@@ -36,12 +37,12 @@ import org.openxmlformats.schemas.presentationml.x2006.main.CTShapeNonVisual;
 @Beta
 public class XSLFAutoShape extends XSLFTextShape implements AutoShape<XSLFShape, XSLFTextParagraph> {
 
-    /* package */ XSLFAutoShape(CTShape shape, XSLFSheet sheet) {
+    public XSLFAutoShape(CTShape shape, XSLFSheet sheet) {
         super(shape, sheet);
     }
 
-    /* package */
-    static XSLFAutoShape create(CTShape shape, XSLFSheet sheet) {
+
+    public static XSLFAutoShape create(CTShape shape, XSLFSheet sheet) {
         if (shape.getSpPr().isSetCustGeom()) {
             return new XSLFFreeformShape(shape, sheet);
         } else if (shape.getNvSpPr().getCNvSpPr().isSetTxBox()) {

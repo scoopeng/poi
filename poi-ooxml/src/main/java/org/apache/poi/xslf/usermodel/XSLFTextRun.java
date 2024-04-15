@@ -70,31 +70,32 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
 
     private final XmlObject _r;
     private final XSLFTextParagraph _p;
+    private boolean skipMasterProp = false;
 
-    protected XSLFTextRun(XmlObject r, XSLFTextParagraph p){
+    protected XSLFTextRun(XmlObject r, XSLFTextParagraph p) {
         _r = r;
         _p = p;
         if (!(r instanceof CTRegularTextRun || r instanceof CTTextLineBreak || r instanceof CTTextField)) {
-            throw new OpenXML4JRuntimeException("unsupported text run of type "+r.getClass());
+            throw new OpenXML4JRuntimeException("unsupported text run of type " + r.getClass());
         }
     }
 
     @Override
-    public String getRawText(){
+    public String getRawText() {
         if (_r instanceof CTTextField) {
-            return ((CTTextField)_r).getT();
+            return ((CTTextField) _r).getT();
         } else if (_r instanceof CTTextLineBreak) {
             return "\n";
         }
-        return ((CTRegularTextRun)_r).getT();
+        return ((CTRegularTextRun) _r).getT();
     }
 
     @Override
-    public void setText(String text){
+    public void setText(String text) {
         if (_r instanceof CTTextField) {
-            ((CTTextField)_r).setT(text);
+            ((CTTextField) _r).setT(text);
         } else if (!(_r instanceof CTTextLineBreak)) {
-            ((CTRegularTextRun)_r).setT(text);
+            ((CTRegularTextRun) _r).setT(text);
         }
     }
 
@@ -106,7 +107,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * @return the xmlbeans object
      */
     @Internal
-    public XmlObject getXmlObject(){
+    public XmlObject getXmlObject() {
         return _r;
     }
 
@@ -121,7 +122,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
             LOG.atWarn().log("Currently only SolidPaint is supported!");
             return;
         }
-        SolidPaint sp = (SolidPaint)color;
+        SolidPaint sp = (SolidPaint) color;
         Color c = DrawPaint.applyColorTransform(sp.getSolidColor());
 
         CTTextCharacterProperties rPr = getRPr(true);
@@ -133,11 +134,12 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public PaintStyle getFontColor(){
+    public PaintStyle getFontColor() {
         XSLFShape shape = getParagraph().getParentShape();
         final boolean hasPlaceholder = shape.getPlaceholder() != null;
         return fetchCharacterProperty((props, val) -> fetchFontColor(props, val, shape, hasPlaceholder));
     }
+
 
     private static void fetchFontColor(CTTextCharacterProperties props, Consumer<PaintStyle> val, XSLFShape shape, boolean hasPlaceholder) {
         if (props == null) {
@@ -156,7 +158,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
         XSLFTheme theme = sheet.getTheme();
         PaintStyle ps = shape.selectPaint(fp, phClr, pp, theme, hasPlaceholder);
 
-        if (ps != null)  {
+        if (ps != null) {
             val.accept(ps);
         }
     }
@@ -167,7 +169,6 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * This returns a {@link SolidPaint}, or null if no highlight is set.
      *
      * @return The font highlight (background) colour associated with the run, null if no highlight.
-     *
      * @see org.apache.poi.sl.draw.DrawPaint#getPaint(java.awt.Graphics2D, PaintStyle)
      * @see SolidPaint#getSolidColor()
      * @since POI 5.2.4
@@ -212,7 +213,6 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      *
      * @param color The highlight (background) color to set.
      * @throws IllegalArgumentException If the supplied paint style is not null or a SolidPaint.
-     *
      * @see org.apache.poi.sl.draw.DrawPaint#createSolidPaint(Color)
      * @since POI 5.2.4
      */
@@ -230,23 +230,23 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
             throw new IllegalArgumentException("Currently only SolidPaint is supported!");
         }
 
-        final SolidPaint sp = (SolidPaint)color;
+        final SolidPaint sp = (SolidPaint) color;
         final Color c = DrawPaint.applyColorTransform(sp.getSolidColor());
 
         final CTTextCharacterProperties rPr = getRPr(true);
         final CTColor highlight = rPr.isSetHighlight() ? rPr.getHighlight() : rPr.addNewHighlight();
 
         final CTSRgbColor col = CTSRgbColor.Factory.newInstance();
-        col.setVal(new byte[] {(byte)c.getRed(), (byte)c.getGreen(), (byte)c.getBlue()});
+        col.setVal(new byte[]{(byte) c.getRed(), (byte) c.getGreen(), (byte) c.getBlue()});
 
         highlight.setSrgbClr(col);
     }
 
 
     @Override
-    public void setFontSize(Double fontSize){
+    public void setFontSize(Double fontSize) {
         CTTextCharacterProperties rPr = getRPr(true);
-        if(fontSize == null) {
+        if (fontSize == null) {
             if (rPr.isSetSz()) {
                 rPr.unsetSz();
             }
@@ -255,12 +255,12 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
                 throw new IllegalArgumentException("Minimum font size is 1pt but was " + fontSize);
             }
 
-            rPr.setSz((int)(100*fontSize));
+            rPr.setSz((int) (100 * fontSize));
         }
     }
 
     @Override
-    public Double getFontSize(){
+    public Double getFontSize() {
         double scale = 1;
         final XSLFTextShape ps = getParagraph().getParentShape();
         if (ps != null) {
@@ -275,10 +275,10 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
 
         Double d = fetchCharacterProperty((props, val) -> {
             if (props.isSetSz()) {
-                val.accept(props.getSz()*0.01);
+                val.accept(props.getSz() * 0.01);
             }
         });
-        return d == null ? null : d*scale;
+        return d == null ? null : d * scale;
     }
 
     /**
@@ -286,7 +286,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * If this attribute is omitted than a value of 0 or no adjustment is assumed.
      */
     @SuppressWarnings("WeakerAccess")
-    public double getCharacterSpacing(){
+    public double getCharacterSpacing() {
         Double d = fetchCharacterProperty((props, val) -> {
             if (props.isSetSpc()) {
                 val.accept(Units.toPoints(POIXMLUnits.parseLength(props.xgetSpc())));
@@ -302,17 +302,17 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * negative values to condense.
      * </p>
      *
-     * @param spc  character spacing in points.
+     * @param spc character spacing in points.
      */
     @SuppressWarnings("WeakerAccess")
-    public void setCharacterSpacing(double spc){
+    public void setCharacterSpacing(double spc) {
         CTTextCharacterProperties rPr = getRPr(true);
-        if(spc == 0.0) {
-            if(rPr.isSetSpc()) {
+        if (spc == 0.0) {
+            if (rPr.isSetSpc()) {
                 rPr.unsetSpc();
             }
         } else {
-            rPr.setSpc((int)(100*spc));
+            rPr.setSpc((int) (100 * spc));
         }
     }
 
@@ -350,7 +350,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public byte getPitchAndFamily(){
+    public byte getPitchAndFamily() {
         FontGroup fg = FontGroup.getFontGroupFirst(getRawText());
         XSLFFontInfo fontInfo = new XSLFFontInfo(fg);
         FontPitch pitch = fontInfo.getPitch();
@@ -390,15 +390,15 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     /**
-     *  Set the baseline for both the superscript and subscript fonts.
-     *  <p>
-     *     The size is specified using a percentage.
-     *     Positive values indicate superscript, negative values indicate subscript.
-     *  </p>
+     * Set the baseline for both the superscript and subscript fonts.
+     * <p>
+     * The size is specified using a percentage.
+     * Positive values indicate superscript, negative values indicate subscript.
+     * </p>
      */
     @SuppressWarnings("WeakerAccess")
-    public void setBaselineOffset(double baselineOffset){
-       getRPr(true).setBaseline((int) baselineOffset * 1000);
+    public void setBaselineOffset(double baselineOffset) {
+        getRPr(true).setBaseline((int) baselineOffset * 1000);
     }
 
     /**
@@ -408,7 +408,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * @see #setBaselineOffset(double)
      */
     @SuppressWarnings("WeakerAccess")
-    public void setSuperscript(boolean flag){
+    public void setSuperscript(boolean flag) {
         setBaselineOffset(flag ? 30. : 0.);
     }
 
@@ -419,7 +419,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
      * @see #setBaselineOffset(double)
      */
     @SuppressWarnings("WeakerAccess")
-    public void setSubscript(boolean flag){
+    public void setSubscript(boolean flag) {
         setBaselineOffset(flag ? -25.0 : 0.);
     }
 
@@ -447,7 +447,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public void setBold(boolean bold){
+    public void setBold(boolean bold) {
         getRPr(true).setB(bold);
     }
 
@@ -463,7 +463,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
 
 
     @Override
-    public void setItalic(boolean italic){
+    public void setItalic(boolean italic) {
         getRPr(true).setI(italic);
     }
 
@@ -483,7 +483,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public boolean isUnderlined(){
+    public boolean isUnderlined() {
         Boolean b = fetchCharacterProperty((props, val) -> {
             if (props.isSetU()) {
                 val.accept(props.getU() != STTextUnderlineType.NONE);
@@ -501,21 +501,21 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     @Internal
     public CTTextCharacterProperties getRPr(boolean create) {
         if (_r instanceof CTTextField) {
-            CTTextField tf = (CTTextField)_r;
+            CTTextField tf = (CTTextField) _r;
             if (tf.isSetRPr()) {
                 return tf.getRPr();
             } else if (create) {
                 return tf.addNewRPr();
             }
         } else if (_r instanceof CTTextLineBreak) {
-            CTTextLineBreak tlb = (CTTextLineBreak)_r;
+            CTTextLineBreak tlb = (CTTextLineBreak) _r;
             if (tlb.isSetRPr()) {
                 return tlb.getRPr();
             } else if (create) {
                 return tlb.addNewRPr();
             }
         } else {
-            CTRegularTextRun tr = (CTRegularTextRun)_r;
+            CTRegularTextRun tr = (CTRegularTextRun) _r;
             if (tr.isSetRPr()) {
                 return tr.getRPr();
             } else if (create) {
@@ -529,12 +529,12 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "[" + getClass() + "]" + getRawText();
     }
 
     @Override
-    public XSLFHyperlink createHyperlink(){
+    public XSLFHyperlink createHyperlink() {
         XSLFHyperlink hl = getHyperlink();
         if (hl != null) {
             return hl;
@@ -545,7 +545,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     }
 
     @Override
-    public XSLFHyperlink getHyperlink(){
+    public XSLFHyperlink getHyperlink() {
         CTTextCharacterProperties rPr = getRPr(false);
         if (rPr == null) {
             return null;
@@ -557,19 +557,19 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
         return new XSLFHyperlink(hl, _p.getParentShape().getSheet());
     }
 
-    private <T> T fetchCharacterProperty(CharPropFetcher<T> fetcher){
+    private <T> T fetchCharacterProperty(CharPropFetcher<T> fetcher) {
         final XSLFTextShape shape = _p.getParentShape();
-        return new CharacterPropertyFetcher<>(this, fetcher).fetchProperty(shape);
+        return new CharacterPropertyFetcher<>(this, fetcher, skipMasterProp).fetchProperty(shape);
     }
 
-    void copy(XSLFTextRun r){
+    void copy(XSLFTextRun r) {
         String srcFontFamily = r.getFontFamily();
-        if(srcFontFamily != null && !srcFontFamily.equals(getFontFamily())){
+        if (srcFontFamily != null && !srcFontFamily.equals(getFontFamily())) {
             setFontFamily(srcFontFamily);
         }
 
         PaintStyle srcFontColor = r.getFontColor();
-        if(srcFontColor != null && !srcFontColor.equals(getFontColor())){
+        if (srcFontColor != null && !srcFontColor.equals(getFontColor())) {
             setFontColor(srcFontColor);
         }
 
@@ -578,27 +578,27 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
             if (getFontSize() != null) {
                 setFontSize(null);
             }
-        } else if(!srcFontSize.equals(getFontSize())) {
+        } else if (!srcFontSize.equals(getFontSize())) {
             setFontSize(srcFontSize);
         }
 
         boolean bold = r.isBold();
-        if(bold != isBold()) {
+        if (bold != isBold()) {
             setBold(bold);
         }
 
         boolean italic = r.isItalic();
-        if(italic != isItalic()) {
+        if (italic != isItalic()) {
             setItalic(italic);
         }
 
         boolean underline = r.isUnderlined();
-        if(underline != isUnderlined()) {
+        if (underline != isUnderlined()) {
             setUnderlined(underline);
         }
 
         boolean strike = r.isStrikethrough();
-        if(strike != isStrikethrough()) {
+        if (strike != isStrikethrough()) {
             setStrikethrough(strike);
         }
 
@@ -613,7 +613,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     @Override
     public FieldType getFieldType() {
         if (_r instanceof CTTextField) {
-            CTTextField tf = (CTTextField)_r;
+            CTTextField tf = (CTTextField) _r;
             if ("slidenum".equals(tf.getType())) {
                 return FieldType.SLIDE_NUMBER;
             }
@@ -670,34 +670,34 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
             }
             FontGroup fg = FontGroup.getFontGroupFirst(getRawText());
             switch (fg) {
-            default:
-            case LATIN:
-                if (props.isSetLatin()) {
-                    props.unsetLatin();
-                }
-                break;
-            case EAST_ASIAN:
-                if (props.isSetEa()) {
-                    props.unsetEa();
-                }
-                break;
-            case COMPLEX_SCRIPT:
-                if (props.isSetCs()) {
-                    props.unsetCs();
-                }
-                break;
-            case SYMBOL:
-                if (props.isSetSym()) {
-                    props.unsetSym();
-                }
-                break;
+                default:
+                case LATIN:
+                    if (props.isSetLatin()) {
+                        props.unsetLatin();
+                    }
+                    break;
+                case EAST_ASIAN:
+                    if (props.isSetEa()) {
+                        props.unsetEa();
+                    }
+                    break;
+                case COMPLEX_SCRIPT:
+                    if (props.isSetCs()) {
+                        props.unsetCs();
+                    }
+                    break;
+                case SYMBOL:
+                    if (props.isSetSym()) {
+                        props.unsetSym();
+                    }
+                    break;
             }
         }
 
         @Override
         public FontCharset getCharset() {
             CTTextFont tf = getXmlObject(false);
-            return (tf != null && tf.isSetCharset()) ? FontCharset.valueOf(tf.getCharset()&0xFF) : null;
+            return (tf != null && tf.isSetCharset()) ? FontCharset.valueOf(tf.getCharset() & 0xFF) : null;
         }
 
         @Override
@@ -707,7 +707,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
                 return;
             }
             if (charset != null) {
-                tf.setCharset((byte)charset.getNativeId());
+                tf.setCharset((byte) charset.getNativeId());
             } else {
                 if (tf.isSetCharset()) {
                     tf.unsetCharset();
@@ -728,8 +728,8 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
                 return;
             }
             FontPitch pitch = (tf.isSetPitchFamily())
-                ? FontPitch.valueOfPitchFamily(tf.getPitchFamily())
-                : FontPitch.VARIABLE;
+                    ? FontPitch.valueOfPitchFamily(tf.getPitchFamily())
+                    : FontPitch.VARIABLE;
             byte pitchFamily = FontPitch.getNativeId(pitch, family != null ? family : FontFamily.FF_SWISS);
             tf.setPitchFamily(pitchFamily);
         }
@@ -747,8 +747,8 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
                 return;
             }
             FontFamily family = (tf.isSetPitchFamily())
-                ? FontFamily.valueOfPitchFamily(tf.getPitchFamily())
-                : FontFamily.FF_SWISS;
+                    ? FontFamily.valueOfPitchFamily(tf.getPitchFamily())
+                    : FontFamily.FF_SWISS;
             byte pitchFamily = FontPitch.getNativeId(pitch != null ? pitch : FontPitch.VARIABLE, family);
             tf.setPitchFamily(pitchFamily);
         }
@@ -773,31 +773,31 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
 
             CTTextFont font;
             switch (fontGroup) {
-            default:
-            case LATIN:
-                font = props.getLatin();
-                if (font == null && create) {
-                    font = props.addNewLatin();
-                }
-                break;
-            case EAST_ASIAN:
-                font = props.getEa();
-                if (font == null && create) {
-                    font = props.addNewEa();
-                }
-                break;
-            case COMPLEX_SCRIPT:
-                font = props.getCs();
-                if (font == null && create) {
-                    font = props.addNewCs();
-                }
-                break;
-            case SYMBOL:
-                font = props.getSym();
-                if (font == null && create) {
-                    font = props.addNewSym();
-                }
-                break;
+                default:
+                case LATIN:
+                    font = props.getLatin();
+                    if (font == null && create) {
+                        font = props.addNewLatin();
+                    }
+                    break;
+                case EAST_ASIAN:
+                    font = props.getEa();
+                    if (font == null && create) {
+                        font = props.addNewEa();
+                    }
+                    break;
+                case COMPLEX_SCRIPT:
+                    font = props.getCs();
+                    if (font == null && create) {
+                        font = props.addNewCs();
+                    }
+                    break;
+                case SYMBOL:
+                    font = props.getSym();
+                    if (font == null && create) {
+                        font = props.addNewSym();
+                    }
+                    break;
             }
 
             if (font == null) {
@@ -813,7 +813,7 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
                 final XSLFTheme theme = _p.getParentShape().getSheet().getTheme();
                 CTFontScheme fontTheme = theme.getXmlObject().getThemeElements().getFontScheme();
                 CTFontCollection coll = typeface.startsWith("+mj-")
-                    ? fontTheme.getMajorFont() : fontTheme.getMinorFont();
+                        ? fontTheme.getMajorFont() : fontTheme.getMinorFont();
                 // TODO: handle LCID codes
                 // see https://blogs.msdn.microsoft.com/officeinteroperability/2013/04/22/office-open-xml-themes-schemes-and-fonts/
                 String fgStr = typeface.substring(4);
@@ -840,5 +840,13 @@ public class XSLFTextRun implements TextRun, HighlightColorSupport {
     @Override
     public XSLFTextParagraph getParagraph() {
         return _p;
+    }
+
+    public boolean isSkipMasterProp() {
+        return skipMasterProp;
+    }
+
+    public void setSkipMasterProp(boolean skipTheme) {
+        this.skipMasterProp = skipTheme;
     }
 }

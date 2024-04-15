@@ -36,17 +36,25 @@ import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraphProperties
 @Internal
 public final class CharacterPropertyFetcher<T> extends PropertyFetcher<T> {
     public interface CharPropFetcher<S> {
-        void fetch (CTTextCharacterProperties props, Consumer<S> val);
+        void fetch(CTTextCharacterProperties props, Consumer<S> val);
     }
 
     private final XSLFTextRun run;
     int _level;
     private final CharPropFetcher<T> fetcher;
+    private boolean skipThemeAndMaster;
 
     public CharacterPropertyFetcher(XSLFTextRun run, CharPropFetcher<T> fetcher) {
         _level = run.getParagraph().getIndentLevel();
         this.fetcher = fetcher;
         this.run = run;
+    }
+
+    public CharacterPropertyFetcher(XSLFTextRun run, CharPropFetcher<T> fetcher, boolean skipMasterProp) {
+        _level = run.getParagraph().getIndentLevel();
+        this.fetcher = fetcher;
+        this.run = run;
+        this.skipThemeAndMaster = skipMasterProp;
     }
 
     public boolean fetch(XSLFShape shape) {
@@ -67,10 +75,13 @@ public final class CharacterPropertyFetcher<T> extends PropertyFetcher<T> {
         if (!(sheet instanceof XSLFSlideMaster)) {
             fetchParagraphDefaultRunProp();
             fetchShapeProp(shape);
-            fetchThemeProp(shape);
+            if (!skipThemeAndMaster) {
+                fetchThemeProp(shape);
+            }
         }
 
-        fetchMasterProp();
+        if (!skipThemeAndMaster)
+            fetchMasterProp();
 
         return isSet() ? getValue() : null;
     }

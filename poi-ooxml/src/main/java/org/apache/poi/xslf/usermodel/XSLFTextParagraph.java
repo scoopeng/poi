@@ -63,7 +63,7 @@ public class XSLFTextParagraph implements TextParagraph<XSLFShape,XSLFTextParagr
         void accept();
     }
 
-    XSLFTextParagraph(CTTextParagraph p, XSLFTextShape shape) {
+    public XSLFTextParagraph(CTTextParagraph p, XSLFTextShape shape) {
         _p = p;
         _runs = new ArrayList<>();
         _shape = shape;
@@ -528,11 +528,14 @@ public class XSLFTextParagraph implements TextParagraph<XSLFShape,XSLFTextParagr
     public Double getLineSpacing() {
         final Double lnSpc = getSpacing(props -> props::getLnSpc);
         if (lnSpc != null && lnSpc > 0) {
-            // check if the percentage value is scaled
-            final CTTextNormalAutofit normAutofit = getParentShape().getTextBodyPr().getNormAutofit();
-            if (normAutofit != null) {
-                final double scale = 1 - POIXMLUnits.parsePercent(normAutofit.xgetLnSpcReduction()) / 100_000.;
-                return lnSpc * scale;
+            if (this.getParentShape().getTextBodyPr() != null)
+            {
+                // check if the percentage value is scaled
+                final CTTextNormalAutofit normAutofit = getParentShape().getTextBodyPr().getNormAutofit();
+                if (normAutofit != null) {
+                    final double scale = 1 - POIXMLUnits.parsePercent(normAutofit.xgetLnSpcReduction()) / 100_000.;
+                    return lnSpc * scale;
+                }
             }
         }
 

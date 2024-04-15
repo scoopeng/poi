@@ -81,7 +81,7 @@ public class DrawPaint {
         this.shape = shape;
     }
 
-    private static class SimpleSolidPaint implements SolidPaint {
+    public static class SimpleSolidPaint implements SolidPaint {
         private final ColorStyle solidColor;
 
         SimpleSolidPaint(final Color color) {

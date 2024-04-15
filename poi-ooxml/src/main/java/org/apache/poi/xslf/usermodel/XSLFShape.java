@@ -59,6 +59,7 @@ import org.openxmlformats.schemas.presentationml.x2006.main.CTPicture;
 import org.openxmlformats.schemas.presentationml.x2006.main.CTPlaceholder;
 import org.openxmlformats.schemas.presentationml.x2006.main.CTShape;
 import org.openxmlformats.schemas.presentationml.x2006.main.STPlaceholderType;
+import org.w3c.dom.NodeList;
 
 import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_DRAWINGML;
 import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_PRESENTATIONML;
@@ -67,7 +68,7 @@ import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_PRESENTATIONML;
  * Base super-class class for all shapes in PresentationML
  */
 @Beta
-public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
+public abstract class XSLFShape implements Shape<XSLFShape, XSLFTextParagraph> {
 
     @Internal
     public interface ReparseFactory<T extends XmlObject> {
@@ -78,15 +79,15 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
     static final String PML_NS = NS_PRESENTATIONML;
 
     private static final QName[] NV_CONTAINER = {
-        new QName(PML_NS, "nvSpPr"),
-        new QName(PML_NS, "nvCxnSpPr"),
-        new QName(PML_NS, "nvGrpSpPr"),
-        new QName(PML_NS, "nvPicPr"),
-        new QName(PML_NS, "nvGraphicFramePr")
+            new QName(PML_NS, "nvSpPr"),
+            new QName(PML_NS, "nvCxnSpPr"),
+            new QName(PML_NS, "nvGrpSpPr"),
+            new QName(PML_NS, "nvPicPr"),
+            new QName(PML_NS, "nvGraphicFramePr")
     };
 
     private static final QName[] CNV_PROPS = {
-        new QName(PML_NS, "cNvPr")
+            new QName(PML_NS, "cNvPr")
     };
 
     private final XmlObject _shape;
@@ -134,7 +135,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
      * Set the contents of this shape to be a copy of the source shape.
      * This method is called recursively for each shape when merging slides
      *
-     * @param  sh the source shape
+     * @param sh the source shape
      * @see org.apache.poi.xslf.usermodel.XSLFSlide#importContent(XSLFSheet)
      */
     @Internal
@@ -145,7 +146,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         }
 
         if (this instanceof PlaceableShape) {
-            PlaceableShape<?,?> ps = (PlaceableShape<?,?>)this;
+            PlaceableShape<?, ?> ps = (PlaceableShape<?, ?>) this;
             Rectangle2D anchor = sh.getAnchor();
             if (anchor != null) {
                 ps.setAnchor(anchor);
@@ -173,7 +174,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
             public boolean fetch(XSLFShape shape) {
                 PackagePart pp = shape.getSheet().getPackagePart();
                 if (shape instanceof XSLFPictureShape) {
-                    CTPicture pic = (CTPicture)shape.getXmlObject();
+                    CTPicture pic = (CTPicture) shape.getXmlObject();
                     if (pic.getBlipFill() != null) {
                         setValue(selectPaint(pic.getBlipFill(), pp, null, theme));
                         return true;
@@ -252,8 +253,8 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
      * Return direct child objects of this shape
      *
      * @param childClass the class to cast the properties to
-     * @param namespace the namespace - usually it is {@code "http://schemas.openxmlformats.org/presentationml/2006/main"}
-     * @param nodename the node name, without prefix
+     * @param namespace  the namespace - usually it is {@code "http://schemas.openxmlformats.org/presentationml/2006/main"}
+     * @param nodename   the node name, without prefix
      * @return the properties object or null if it can't be found
      */
     @SuppressWarnings({"unchecked", "WeakerAccess", "unused", "SameParameterValue"})
@@ -261,10 +262,19 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         T child = null;
         try (XmlCursor cur = getXmlObject().newCursor()) {
             if (cur.toChild(namespace, nodename)) {
-                child = (T)cur.getObject();
+                child = (T) cur.getObject();
             }
             if (cur.toChild(XSLFRelation.NS_DRAWINGML, nodename)) {
-                child = (T)cur.getObject();
+                child = (T) cur.getObject();
+            }
+            if (child == null) {
+                NodeList childNodes = this.getXmlObject().getDomNode().getFirstChild().getChildNodes();
+                for (int i = 0; i < childNodes.getLength(); i++) {
+                    if (childNodes.item(i).getNodeName().endsWith(":" + nodename)) {
+                        child = (T) childNodes.item(i);
+                        return child;
+                    }
+                }
             }
         }
         return child;
@@ -303,7 +313,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
      * properties.
      *
      * @param resultClass the requested result class
-     * @param xquery the simple (xmlbean) xpath expression to the property
+     * @param xquery      the simple (xmlbean) xpath expression to the property
      * @return the xml object at the xpath location, or null if not found
      */
     @SuppressWarnings({"unchecked", "WeakerAccess"})
@@ -312,19 +322,19 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         if (rs.length == 0) {
             return null;
         }
-        return (resultClass.isInstance(rs[0])) ? (T)rs[0] : null;
+        return (resultClass.isInstance(rs[0])) ? (T) rs[0] : null;
     }
 
     /**
      * Walk up the inheritance tree and fetch shape properties.<p>
-     *
+     * <p>
      * The following order of inheritance is assumed:
      * <ol>
      * <li>slide
      * <li>slideLayout
      * <li>slideMaster
      * </ol>
-     *
+     * <p>
      * Currently themes and their defaults aren't correctly handled
      *
      * @param visitor the object that collects the desired property
@@ -342,11 +352,11 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         if (ph == null) {
             return false;
         }
-        MasterSheet<XSLFShape,XSLFTextParagraph> sm = getSheet().getMasterSheet();
+        MasterSheet<XSLFShape, XSLFTextParagraph> sm = getSheet().getMasterSheet();
 
         // try slide layout
         if (sm instanceof XSLFSlideLayout) {
-            XSLFSlideLayout slideLayout = (XSLFSlideLayout)sm;
+            XSLFSlideLayout slideLayout = (XSLFSlideLayout) sm;
             XSLFSimpleShape placeholderShape = slideLayout.getPlaceholder(ph);
             if (placeholderShape != null && visitor.fetch(placeholderShape)) {
                 return true;
@@ -356,7 +366,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
 
         // try slide master
         if (sm instanceof XSLFSlideMaster) {
-            XSLFSlideMaster master = (XSLFSlideMaster)sm;
+            XSLFSlideMaster master = (XSLFSlideMaster) sm;
             int textType = getPlaceholderType(ph);
             XSLFSimpleShape masterShape = master.getPlaceholderByType(textType);
             return masterShape != null && visitor.fetch(masterShape);
@@ -366,7 +376,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
     }
 
     private static int getPlaceholderType(CTPlaceholder ph) {
-        if ( !ph.isSetType()) {
+        if (!ph.isSetType()) {
             return STPlaceholderType.INT_BODY;
         }
 
@@ -387,12 +397,11 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
      * Convert shape fill into java.awt.Paint. The result is either Color or
      * TexturePaint or GradientPaint or null
      *
-     * @param fp          a properties handler specific to the underlying shape properties
-     * @param phClr       context color
-     * @param parentPart  the parent package part. Any external references (images, etc.) are resolved relative to it.
-     * @param theme       the theme for the shape/sheet
-     *
-     * @return  the applied Paint or null if none was applied
+     * @param fp         a properties handler specific to the underlying shape properties
+     * @param phClr      context color
+     * @param parentPart the parent package part. Any external references (images, etc.) are resolved relative to it.
+     * @param theme      the theme for the shape/sheet
+     * @return the applied Paint or null if none was applied
      */
     @SuppressWarnings("WeakerAccess")
     protected PaintStyle selectPaint(XSLFFillProperties fp, final CTSchemeColor phClr, final PackagePart parentPart, final XSLFTheme theme, boolean hasPlaceholder) {
@@ -452,9 +461,9 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         final XmlObject styleLst;
         long childIdx;
         if (idx >= 1 && idx <= 999) {
-            childIdx = idx-1;
+            childIdx = idx - 1;
             styleLst = (isLineStyle) ? matrix.getLnStyleLst() : matrix.getFillStyleLst();
-        } else if (idx >= 1001 ){
+        } else if (idx >= 1001) {
             childIdx = idx - 1001;
             styleLst = matrix.getBgFillStyleLst();
         } else {
@@ -468,7 +477,7 @@ public abstract class XSLFShape implements Shape<XSLFShape,XSLFTextParagraph> {
         }
 
         CTSchemeColor phClr = fillRef.getSchemeClr();
-        PaintStyle res =  selectPaint(fp, phClr, theme.getPackagePart(), theme, hasPlaceholder);
+        PaintStyle res = selectPaint(fp, phClr, theme.getPackagePart(), theme, hasPlaceholder);
         // check for empty placeholder value
         // see http://officeopenxml.com/prSlide-color.php - "Color Placeholders within Themes"
         if (res != null || hasPlaceholder) {
