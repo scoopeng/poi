@@ -165,7 +165,7 @@ public abstract class XSLFShape implements Shape<XSLFShape, XSLFTextParagraph> {
         return this._parent;
     }
 
-    protected PaintStyle getFillPaint() {
+    public PaintStyle getFillPaint() {
         final XSLFTheme theme = getSheet().getTheme();
         final boolean hasPlaceholder = getPlaceholder() != null;
 
