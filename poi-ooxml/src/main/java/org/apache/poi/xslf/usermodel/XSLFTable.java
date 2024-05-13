@@ -331,7 +331,7 @@ public class XSLFTable extends XSLFGraphicFrame implements Iterable<XSLFTableRow
      *
      * @since POI 3.15-beta2
      */
-    protected XSLFTableStyle getTableStyle() {
+    public XSLFTableStyle getTableStyle() {
         CTTable tab = getCTTable();
         // TODO: support inline table style
         if (!tab.isSetTblPr() || !tab.getTblPr().isSetTableStyleId()) {
