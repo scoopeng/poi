@@ -474,7 +474,7 @@ public class XSLFTableCell extends XSLFTextShape implements TableCell<XSLFShape,
      *            when used as a helper method
      * @return the table part style
      */
-    private CTTablePartStyle getTablePartStyle(TablePartStyle tablePartStyle) {
+    public CTTablePartStyle getTablePartStyle(TablePartStyle tablePartStyle) {
         CTTable ct = table.getCTTable();
         if (!ct.isSetTblPr()) {
             return null;
@@ -634,7 +634,7 @@ public class XSLFTableCell extends XSLFTextShape implements TableCell<XSLFShape,
         }
     }
 
-    private CTTableCell getCell() {
+    public CTTableCell getCell() {
         return (CTTableCell) getXmlObject();
     }
 

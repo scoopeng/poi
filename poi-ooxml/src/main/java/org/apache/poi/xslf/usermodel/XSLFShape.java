@@ -422,13 +422,13 @@ public abstract class XSLFShape implements Shape<XSLFShape, XSLFTextParagraph> {
         }
     }
 
-    protected PaintStyle selectPaint(CTSchemeColor phClr, final XSLFTheme theme) {
+    public PaintStyle selectPaint(CTSchemeColor phClr, final XSLFTheme theme) {
         final XSLFColor c = new XSLFColor(null, theme, phClr, _sheet);
         return DrawPaint.createSolidPaint(c.getColorStyle());
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected PaintStyle selectPaint(CTSolidColorFillProperties solidFill, CTSchemeColor phClr, final XSLFTheme theme) {
+    public PaintStyle selectPaint(CTSolidColorFillProperties solidFill, CTSchemeColor phClr, final XSLFTheme theme) {
         CTSchemeColor nestedPhClr = solidFill.getSchemeClr();
         boolean useNested = nestedPhClr != null && nestedPhClr.getVal() != null && !STSchemeColorVal.PH_CLR.equals(nestedPhClr.getVal());
         final XSLFColor c = new XSLFColor(solidFill, theme, useNested ? nestedPhClr : phClr, _sheet);
@@ -436,17 +436,17 @@ public abstract class XSLFShape implements Shape<XSLFShape, XSLFTextParagraph> {
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected PaintStyle selectPaint(final CTBlipFillProperties blipFill, final PackagePart parentPart, CTSchemeColor phClr, final XSLFTheme theme) {
+    public PaintStyle selectPaint(final CTBlipFillProperties blipFill, final PackagePart parentPart, CTSchemeColor phClr, final XSLFTheme theme) {
         return new XSLFTexturePaint(this, blipFill, parentPart, phClr, theme, _sheet);
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected PaintStyle selectPaint(final CTGradientFillProperties gradFill, CTSchemeColor phClr, final XSLFTheme theme) {
+    public PaintStyle selectPaint(final CTGradientFillProperties gradFill, CTSchemeColor phClr, final XSLFTheme theme) {
         return new XSLFGradientPaint(gradFill, phClr, theme, _sheet);
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected PaintStyle selectPaint(CTStyleMatrixReference fillRef, final XSLFTheme theme, boolean isLineStyle, boolean hasPlaceholder) {
+    public PaintStyle selectPaint(CTStyleMatrixReference fillRef, final XSLFTheme theme, boolean isLineStyle, boolean hasPlaceholder) {
         if (fillRef == null) {
             return null;
         }

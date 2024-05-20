@@ -1,0 +1,3 @@
+cp build/dist/maven/poi-ooxml/poi-ooxml-5.2.5.jar /home/brad-peters/dev/scoop/app/lib
+cp build/dist/maven/poi-ooxml-full/poi-ooxml-full-5.2.5.jar /home/brad-peters/dev/scoop/app/lib
+cp build/dist/maven/poi/poi-5.2.5.jar /home/brad-peters/dev/scoop/app/lib
